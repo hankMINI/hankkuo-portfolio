@@ -58,7 +58,7 @@ const props = defineProps({
   isVisible: { type: Boolean, default: false }
 })
 
-const expandedId = ref('ey') // 預設展開第一個
+const expandedId = ref(experiences.value[0]?.id || null)
 const childrenVisible = ref(Array(experiences.value.length + 1).fill(false))
 const cardRefs = reactive({})
 
@@ -70,6 +70,14 @@ function toggle(id) {
     })
   }
 }
+
+// 當 experiences 數量變化時，更新動畫陣列和預設展開項
+watch(experiences, (val) => {
+  childrenVisible.value = Array(val.length + 1).fill(false)
+  if (!expandedId.value && val.length) {
+    expandedId.value = val[0].id
+  }
+})
 
 watch(() => props.isVisible, (val) => {
   if (val) {
