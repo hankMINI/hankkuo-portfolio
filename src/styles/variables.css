@@ -1,0 +1,25 @@
+:root {
+  --color-bg: #0F1720;
+  --color-green: #58FF45;
+  --color-white: #FFFFFF;
+  --color-dark-text: #2A2A2A;
+  --color-blue-gradient: linear-gradient(221deg, #316FFF 4.17%, #2B68F8 57.5%, #0039C8 109.81%);
+  --color-light-bg: #DFE9FF;
+  --color-tag-bg: #0C233D;
+  --color-tool-bg: #ECF1FF;
+  --color-gray: #7A7A7A;
+
+  --radius-xl: 64px;
+  --radius-lg: 32px;
+  --radius-md: 24px;
+  --radius-sm: 16px;
+  --radius-xs: 8px;
+  --radius-pill: 100px;
+
+  --font-heading: 'League Spartan', sans-serif;
+  --font-body: 'Noto Sans TC', sans-serif;
+
+  --max-width-nav: 1600px;
+  --max-width-content: 1680px;
+  --max-width-hero: 908px;
+}
