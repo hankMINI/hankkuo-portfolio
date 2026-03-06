@@ -19,15 +19,12 @@
 
       <!-- Content Wrap -->
       <div class="content-wrap">
-        <ProjectsSection ref="projectsRef" :is-visible="projectsVisible" @open-modal="openModal" />
+        <ProjectsSection ref="projectsRef" :is-visible="projectsVisible" />
         <ExperiencesSection ref="experiencesRef" :is-visible="experiencesVisible" />
       </div>
 
       <AppFooter ref="footerRef" :is-visible="footerVisible" />
     </main>
-
-    <!-- Modal -->
-    <ProjectModal ref="projectModal" />
 
     <!-- Resume Button -->
     <ResumeButton />
@@ -37,9 +34,16 @@
   </div>
 </template>
 
+<script>
+// 模組層級變數：跨組件掛載持續存在
+let hasLoaded = false
+let savedScrollY = 0
+</script>
+
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { useLenis } from '@/composables/useLenis'
+import { gsap } from 'gsap'
 import AppLoader from '@/components/AppLoader.vue'
 import AppNav from '@/components/AppNav.vue'
 import HeroSection from '@/components/HeroSection.vue'
@@ -48,14 +52,13 @@ import MarqueeStrip from '@/components/MarqueeStrip.vue'
 import ProjectsSection from '@/components/ProjectsSection.vue'
 import ExperiencesSection from '@/components/ExperiencesSection.vue'
 import AppFooter from '@/components/AppFooter.vue'
-import ProjectModal from '@/components/ProjectModal.vue'
 import GoToTop from '@/components/GoToTop.vue'
 import ResumeButton from '@/components/ResumeButton.vue'
 
-const { init: initLenis } = useLenis()
+const { init: initLenis, scrollTo: lenisScrollTo } = useLenis()
 
-// 狀態
-const showLoader = ref(true)
+// 狀態：永遠從 false 開始，返回時在 onMounted 中觸發 watch
+const showLoader = ref(!hasLoaded)
 const navVisible = ref(false)
 const heroVisible = ref(false)
 const expertiseVisible = ref(false)
@@ -70,8 +73,6 @@ const marqueeRef = ref(null)
 const projectsRef = ref(null)
 const experiencesRef = ref(null)
 const footerRef = ref(null)
-const projectModal = ref(null)
-
 // Observer
 let observer = null
 
@@ -81,11 +82,8 @@ function isInViewport(el) {
   return rect.top < window.innerHeight && rect.bottom > 0
 }
 
-function openModal(projectId) {
-  projectModal.value?.openProject(projectId)
-}
-
 function onLoadingDone() {
+  hasLoaded = true
   showLoader.value = false
   document.body.classList.remove('loading')
   document.body.classList.add('loaded')
@@ -93,31 +91,43 @@ function onLoadingDone() {
 }
 
 function triggerSequentialFadeIn() {
-  // Hero 依序出場
-  setTimeout(() => { heroVisible.value = true }, 0)
-  setTimeout(() => { navVisible.value = true }, 300)
-  setTimeout(() => { heroVisible.value = true }, 600)
+  const tl = gsap.timeline()
 
-  // 主內容區
-  let delay = 900
+  // Hero 動畫序列
+  tl.to({}, { duration: 0.1 }) // 初始延遲
+    .to(heroVisible, { value: true, duration: 0 }, 0)
+    .to(navVisible, { value: true, duration: 0 }, 0.3)
+    .to(heroVisible, { value: true, duration: 0 }, 0.6)
+
+  // 主內容區動畫 - 使用 stagger 效果
   const sections = [
-    { ref: expertiseRef, visible: () => { expertiseVisible.value = true } },
-    { ref: marqueeRef, visible: () => { marqueeVisible.value = true } },
-    { ref: projectsRef, visible: () => { projectsVisible.value = true } },
-    { ref: experiencesRef, visible: () => { experiencesVisible.value = true } },
-    { ref: footerRef, visible: () => { footerVisible.value = true } },
+    { ref: expertiseRef, visible: expertiseVisible },
+    { ref: marqueeRef, visible: marqueeVisible },
+    { ref: projectsRef, visible: projectsVisible },
+    { ref: experiencesRef, visible: experiencesVisible },
+    { ref: footerRef, visible: footerVisible },
   ]
 
-  sections.forEach((section) => {
+  sections.forEach((section, index) => {
     const el = section.ref.value?.$el || section.ref.value
     if (el && isInViewport(el)) {
-      setTimeout(() => section.visible(), delay)
-      delay += 100
+      tl.to(section.visible, { value: true, duration: 0 }, 0.9 + index * 0.2)
     }
   })
 
-  // 用 IntersectionObserver 處理不在畫面中的區塊
+  // 設置滾動觀察器
   nextTick(() => setupObserver())
+}
+
+// 返回時：跳過動畫，立刻顯示所有區塊（從 false → true 觸發子組件 watch）
+function showAllImmediately() {
+  navVisible.value = true
+  heroVisible.value = true
+  expertiseVisible.value = true
+  marqueeVisible.value = true
+  projectsVisible.value = true
+  experiencesVisible.value = true
+  footerVisible.value = true
 }
 
 function setupObserver() {
@@ -127,45 +137,36 @@ function setupObserver() {
         const el = entry.target
 
         if (el === (expertiseRef.value?.$el || expertiseRef.value)) {
-          expertiseVisible.value = true
+          gsap.to(expertiseVisible, { value: true, duration: 0.5, ease: "power2.out" })
         } else if (el === marqueeRef.value) {
-          marqueeVisible.value = true
-          // marquee 出現後延遲讓 projects 也出現
+          gsap.to(marqueeVisible, { value: true, duration: 0.5, ease: "power2.out" })
           if (!projectsVisible.value) {
-            setTimeout(() => { projectsVisible.value = true }, 500)
+            gsap.to(projectsVisible, { value: true, duration: 0.5, ease: "power2.out", delay: 0.3 })
           }
         } else if (el === (projectsRef.value?.$el || projectsRef.value)) {
-          // 確保 marquee 先出現
           if (!marqueeVisible.value) {
-            marqueeVisible.value = true
-            setTimeout(() => { projectsVisible.value = true }, 500)
+            gsap.to(marqueeVisible, { value: true, duration: 0.5, ease: "power2.out" })
+            gsap.to(projectsVisible, { value: true, duration: 0.5, ease: "power2.out", delay: 0.3 })
           } else {
-            projectsVisible.value = true
+            gsap.to(projectsVisible, { value: true, duration: 0.5, ease: "power2.out" })
           }
         } else if (el === (experiencesRef.value?.$el || experiencesRef.value)) {
-          experiencesVisible.value = true
+          gsap.to(experiencesVisible, { value: true, duration: 0.5, ease: "power2.out" })
         } else if (el === (footerRef.value?.$el || footerRef.value)) {
-          footerVisible.value = true
-        }
-      } else {
-        // 離開畫面可選擇重置（保持與原版一致的重播效果）
-        const el = entry.target
-        if (el === (expertiseRef.value?.$el || expertiseRef.value)) {
-          // expertise 保持 visible（sticky 行為）
-        } else if (el === (projectsRef.value?.$el || projectsRef.value)) {
-          projectsVisible.value = false
-        } else if (el === (experiencesRef.value?.$el || experiencesRef.value)) {
-          experiencesVisible.value = false
-        } else if (el === (footerRef.value?.$el || footerRef.value)) {
-          footerVisible.value = false
+          gsap.to(footerVisible, { value: true, duration: 0.5, ease: "power2.out" })
         }
       }
     })
-  }, { threshold: 0.1 })
+  }, {
+    root: null,
+    rootMargin: '0px 0px -10% 0px',
+    threshold: 0.1
+  })
 
-  const targets = [expertiseRef, marqueeRef, projectsRef, experiencesRef, footerRef]
-  targets.forEach(r => {
-    const el = r.value?.$el || r.value
+  // 觀察所有區塊
+  const sections = [expertiseRef, marqueeRef, projectsRef, experiencesRef, footerRef]
+  sections.forEach(section => {
+    const el = section.value?.$el || section.value
     if (el) observer.observe(el)
   })
 }
@@ -176,12 +177,30 @@ if ('scrollRestoration' in history) {
 }
 
 onMounted(() => {
-  window.scrollTo(0, 0)
   initLenis()
-  document.body.classList.add('loading')
+  if (hasLoaded) {
+    // 從子頁面返回：不跑 Loader，立刻顯示所有區塊
+    document.body.classList.remove('loading')
+    document.body.classList.add('loaded')
+    // nextTick 確保 DOM 就緒後再設 visible（觸發子組件 watch）
+    nextTick(() => {
+      showAllImmediately()
+      nextTick(() => {
+        // 恢復離開時的滾動位置
+        window.scrollTo(0, savedScrollY)
+        setupObserver()
+      })
+    })
+  } else {
+    // 首次載入：從頂部開始、顯示 Loader
+    window.scrollTo(0, 0)
+    document.body.classList.add('loading')
+  }
 })
 
 onUnmounted(() => {
+  // 離開前保存滾動位置
+  savedScrollY = window.scrollY
   observer?.disconnect()
 })
 </script>

@@ -130,18 +130,18 @@ import avatarImg from '@/assets/avatar.png'
 
 const router = useRouter()
 const { resume } = useResume()
-const { destroy, init } = useLenis()
+const { destroy } = useLenis()
 
 onMounted(() => {
   destroy()
 })
 
-onUnmounted(() => {
-  init()
-})
-
 function close() {
-  router.push('/')
+  if (window.history.length > 1) {
+    router.back()
+  } else {
+    router.push('/')
+  }
 }
 </script>
 

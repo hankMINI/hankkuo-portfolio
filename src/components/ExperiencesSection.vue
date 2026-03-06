@@ -8,7 +8,6 @@
       <div
         v-for="(exp, i) in experiences"
         :key="exp.id"
-        :ref="el => cardRefs[exp.id] = el"
         class="experience-card child-fade"
         :class="{ expanded: expandedId === exp.id, 'fade-in': childrenVisible[i + 1] }"
       >
@@ -22,7 +21,7 @@
             <img :src="arrowRight" alt="">
           </button>
         </div>
-        <div class="exp-content" v-show="expandedId === exp.id" v-if="exp.highlights.length || exp.responsibilities.length || exp.works">
+        <div class="exp-content" :class="{ open: expandedId === exp.id }" v-if="exp.highlights.length || exp.responsibilities.length || exp.works">
           <div class="exp-block highlights-block" v-if="exp.highlights.length">
             <span class="block-label">核心亮點</span>
             <ul>
@@ -46,12 +45,10 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch, nextTick } from 'vue'
+import { ref, watch } from 'vue'
 import { useExperiences } from '@/composables/usePortfolioData'
-import { useLenis } from '@/composables/useLenis'
 import arrowRight from '@/assets/fe_arrow-right.svg'
 
-const { scrollTo } = useLenis()
 const { experiences } = useExperiences()
 
 const props = defineProps({
@@ -60,15 +57,9 @@ const props = defineProps({
 
 const expandedId = ref(experiences.value[0]?.id || null)
 const childrenVisible = ref(Array(experiences.value.length + 1).fill(false))
-const cardRefs = reactive({})
 
 function toggle(id) {
   expandedId.value = expandedId.value === id ? null : id
-  if (expandedId.value && cardRefs[expandedId.value]) {
-    nextTick(() => {
-      scrollTo(cardRefs[expandedId.value], { offset: -100 })
-    })
-  }
 }
 
 // 當 experiences 數量變化時，更新動畫陣列和預設展開項
@@ -192,6 +183,18 @@ watch(() => props.isVisible, (val) => {
 }
 
 .exp-content {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.5s cubic-bezier(0.25, 0, 0.25, 1),
+              opacity 0.4s cubic-bezier(0.25, 0, 0.25, 1),
+              margin-top 0.5s cubic-bezier(0.25, 0, 0.25, 1);
+  margin-top: 0;
+}
+
+.exp-content.open {
+  max-height: 1200px;
+  opacity: 1;
   margin-top: 20px;
 }
 

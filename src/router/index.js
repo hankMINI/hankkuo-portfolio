@@ -23,6 +23,8 @@ const router = createRouter({
   history: createWebHistory(),
   routes,
   scrollBehavior() {
+    // 首頁滾動位置由 HomeView 自行管理（savedScrollY）
+    // 其他頁面一律捲到頂部
     return { top: 0 }
   },
 })

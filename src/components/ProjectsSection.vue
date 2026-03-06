@@ -16,11 +16,11 @@
     <div class="swiper project-swiper" ref="swiperEl">
       <div class="swiper-wrapper">
         <div class="swiper-slide" v-for="project in displayProjects" :key="project.id + '-' + Math.random()">
-          <div
+          <router-link
+            :to="`/project/${project.id}`"
             class="project-card child-fade"
             :class="{ 'fade-in': childrenVisible[1] }"
             :data-project="project.id"
-            @click="$emit('openModal', project.id)"
           >
             <span class="card-tag">{{ project.tag }}</span>
             <div class="card-image">
@@ -30,7 +30,7 @@
               <h3>{{ project.title }}</h3>
               <p>{{ project.subtitle }}</p>
             </div>
-          </div>
+          </router-link>
         </div>
       </div>
     </div>
@@ -66,7 +66,6 @@ const props = defineProps({
   isVisible: { type: Boolean, default: false }
 })
 
-defineEmits(['openModal'])
 
 const swiperEl = ref(null)
 const prevBtn = ref(null)
@@ -238,6 +237,8 @@ watch(() => props.isVisible, (val) => {
 }
 
 .project-card {
+  text-decoration: none;
+  color: inherit;
   flex-shrink: 0;
   width: 280px;
   background: #fff;
