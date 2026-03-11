@@ -1,6 +1,6 @@
 <template>
-  <section class="projects" id="projects" ref="sectionRef" :class="{ visible: isVisible }">
-    <div class="section-header child-fade" :class="{ 'fade-in': childrenVisible[0] }">
+  <section class="projects" id="projects">
+    <div class="section-header" v-reveal>
       <h2>My Project</h2>
       <CtaButton href="#" class="header-cta">更多作品</CtaButton>
       <div class="nav-arrows">
@@ -15,11 +15,10 @@
 
     <div class="swiper project-swiper" ref="swiperEl">
       <div class="swiper-wrapper">
-        <div class="swiper-slide" v-for="project in displayProjects" :key="project.id + '-' + Math.random()">
+        <div class="swiper-slide" v-for="(project, i) in displayProjects" :key="project.id + '-' + i" ref="slideRefs">
           <router-link
             :to="`/project/${project.id}`"
-            class="project-card child-fade"
-            :class="{ 'fade-in': childrenVisible[1] }"
+            class="project-card"
             :data-project="project.id"
           >
             <span class="card-tag">{{ project.tag }}</span>
@@ -46,12 +45,12 @@
       </button>
     </div>
 
-    <CtaButton href="#" style="margin-top: 32px;" class="child-fade bottom-cta" :class="{ 'fade-in': childrenVisible[2] }">更多作品</CtaButton>
+    <CtaButton href="#" style="margin-top: 32px;" class="bottom-cta">更多作品</CtaButton>
   </section>
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import Swiper from 'swiper'
 import 'swiper/css'
 import { useProjects } from '@/composables/usePortfolioData'
@@ -62,18 +61,13 @@ import arrowNavLeft from '@/assets/fe_arrow-left.svg'
 
 const { projects } = useProjects()
 
-const props = defineProps({
-  isVisible: { type: Boolean, default: false }
-})
-
-
 const swiperEl = ref(null)
 const prevBtn = ref(null)
 const nextBtn = ref(null)
 const swiperInstance = ref(null)
-const childrenVisible = ref([false, false, false])
 const currentSlide = ref(0)
 const totalSlides = ref(1)
+const slideRefs = ref([])
 
 // 顯示的專案列表（包括重複卡片，跟原版一致）
 const displayProjects = computed(() => {
@@ -111,17 +105,25 @@ onMounted(() => {
       }
     })
   }
-})
 
-watch(() => props.isVisible, (val) => {
-  if (val) {
-    childrenVisible.value.forEach((_, i) => {
-      setTimeout(() => { childrenVisible.value[i] = true }, i * 200)
-    })
-  } else {
-    childrenVisible.value = [false, false, false]
+  // 卡片進場動畫：只在首次滾動到此區塊時觸發，切換 slide 不再重複動畫
+  const slides = slideRefs.value
+  if (slides.length) {
+    slides.forEach(el => el.classList.add('reveal'))
+    const sectionObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          slides.forEach((el, i) => {
+            setTimeout(() => el.classList.add('revealed'), i * 200)
+          })
+          sectionObserver.disconnect()
+        }
+      })
+    }, { threshold: 0.15 })
+    sectionObserver.observe(swiperEl.value)
   }
 })
+
 </script>
 
 <style scoped>
@@ -131,18 +133,6 @@ watch(() => props.isVisible, (val) => {
   margin-top: -450px;
   position: relative;
   z-index: 4;
-  opacity: 0;
-  filter: blur(10px);
-  transform: translateY(30px);
-  transition: opacity 1.5s cubic-bezier(0.25, 0, 0.25, 1),
-              filter 1.5s cubic-bezier(0.25, 0, 0.25, 1),
-              transform 1.5s cubic-bezier(0.25, 0, 0.25, 1);
-}
-
-.projects.visible {
-  opacity: 1;
-  filter: blur(0px);
-  transform: translateY(0);
 }
 
 .section-header {
@@ -309,22 +299,6 @@ watch(() => props.isVisible, (val) => {
   -webkit-box-orient: vertical;
   overflow: hidden;
   height: 60px;
-}
-
-/* child-fade */
-.child-fade {
-  opacity: 0;
-  filter: blur(10px);
-  transform: translateY(20px);
-  transition: opacity 1s cubic-bezier(0.25, 0, 0.25, 1),
-              filter 1s cubic-bezier(0.25, 0, 0.25, 1),
-              transform 1s cubic-bezier(0.25, 0, 0.25, 1);
-}
-
-.child-fade.fade-in {
-  opacity: 1;
-  filter: blur(0px);
-  transform: translateY(0);
 }
 
 /* Mobile project nav - hidden on desktop */

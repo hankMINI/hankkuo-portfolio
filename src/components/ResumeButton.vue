@@ -56,20 +56,7 @@ function getBaseBottom() {
 }
 
 function onScroll() {
-  const isMobile = window.innerWidth <= 767
-  if (isMobile) {
-    isVisible.value = window.scrollY > 300
-  } else {
-    const ctaBtn = document.querySelector('.cta-button')
-    const mainContent = document.querySelector('.main-content')
-    if (ctaBtn && mainContent) {
-      const ctaRect = ctaBtn.getBoundingClientRect()
-      const mainRect = mainContent.getBoundingClientRect()
-      isVisible.value = mainRect.top <= ctaRect.bottom
-    } else {
-      isVisible.value = window.scrollY > 300
-    }
-  }
+  isVisible.value = window.scrollY > 300
 
   const base = getBaseBottom()
   const footer = document.querySelector('.footer')

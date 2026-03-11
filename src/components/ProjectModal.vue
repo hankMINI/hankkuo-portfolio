@@ -135,10 +135,8 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useProjects } from '@/composables/usePortfolioData'
-import { useLenis } from '@/composables/useLenis'
 
 const { projects } = useProjects()
-const { stop, start } = useLenis()
 
 const isOpen = ref(false)
 const currentProjectId = ref(null)
@@ -163,7 +161,6 @@ function openProject(id) {
     scrollPosition = window.scrollY
     isOpen.value = true
     document.body.classList.add('modal-open')
-    stop()
   }
   nextTick(() => {
     if (modalContent.value) modalContent.value.scrollTop = 0
@@ -174,7 +171,6 @@ function close() {
   detailOpen.value = false
   isOpen.value = false
   document.body.classList.remove('modal-open')
-  start()
   window.scrollTo(0, scrollPosition)
   setTimeout(() => { currentProjectId.value = null }, 400)
 }

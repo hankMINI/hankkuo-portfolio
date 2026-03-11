@@ -125,12 +125,10 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useProjects } from '@/composables/usePortfolioData'
-import { useLenis } from '@/composables/useLenis'
 
 const route = useRoute()
 const router = useRouter()
 const { projects } = useProjects()
-const { destroy: destroyLenis } = useLenis()
 const detailOpen = ref(false)
 
 const project = computed(() => {
@@ -150,11 +148,7 @@ const nextProject = computed(() => {
 })
 
 function goBack() {
-  if (window.history.length > 1) {
-    router.back()
-  } else {
-    router.push('/')
-  }
+  router.push('/')
 }
 
 function onKeydown(e) {
@@ -164,7 +158,6 @@ function onKeydown(e) {
 }
 
 onMounted(() => {
-  destroyLenis()
   document.addEventListener('keydown', onKeydown)
 })
 onUnmounted(() => {

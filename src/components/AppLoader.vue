@@ -96,7 +96,7 @@ onMounted(async () => {
 
 .loader-text {
   font-family: var(--font-heading);
-  font-size: 42px;
+  font-size: 30px;
   font-weight: 700;
   color: #fff;
   display: flex;
@@ -140,7 +140,7 @@ onMounted(async () => {
 
 @media (max-width: 767px) {
   .loader-text {
-    font-size: 32px;
+    font-size: 22px;
   }
 }
 </style>

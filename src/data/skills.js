@@ -8,7 +8,7 @@ export const skillCards = [
       'RWD 響應式網頁設計',
       'Prototype',
     ],
-    tools: ['Figma', 'Sketch'],
+    tools: ['Figma', 'Sketch', 'Pencil'],
   },
   {
     label: '使用者研究與策略',
@@ -30,6 +30,6 @@ export const skillCards = [
       'HTML/CSS 基礎與實作概念',
       '敏捷開發協作',
     ],
-    tools: ['ChatGPT', 'Notion', 'Gemini'],
+    tools: ['Claude Code', 'Gemini CLI', 'Notion'],
   },
 ]

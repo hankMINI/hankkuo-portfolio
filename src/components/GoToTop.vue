@@ -8,27 +8,11 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useLenis } from '@/composables/useLenis'
-
-const { scrollTo } = useLenis()
 const isVisible = ref(false)
 const bottomPx = ref('30px')
 
 function onScroll() {
-  const isMobile = window.innerWidth <= 767
-  if (isMobile) {
-    isVisible.value = window.scrollY > 300
-  } else {
-    const ctaBtn = document.querySelector('.cta-button')
-    const mainContent = document.querySelector('.main-content')
-    if (ctaBtn && mainContent) {
-      const ctaRect = ctaBtn.getBoundingClientRect()
-      const mainRect = mainContent.getBoundingClientRect()
-      isVisible.value = mainRect.top <= ctaRect.bottom
-    } else {
-      isVisible.value = window.scrollY > 300
-    }
-  }
+  isVisible.value = window.scrollY > 300
 
   const footer = document.querySelector('.footer')
   if (footer) {
@@ -43,7 +27,7 @@ function onScroll() {
 }
 
 function goTop() {
-  scrollTo(0, { duration: 1.5 })
+  window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
 onMounted(() => window.addEventListener('scroll', onScroll))

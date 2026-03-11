@@ -1,4 +1,5 @@
 <template>
+  <div class="resume-page">
   <!-- 關閉按鈕（放在 overlay 外面，避免 backdrop-filter 影響 fixed 定位） -->
   <button class="resume-close" @click="close" aria-label="關閉">
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -110,31 +111,26 @@
 
   <!-- 固定下載按鈕（放在 overlay 外面，避免 backdrop-filter 影響 fixed 定位） -->
   <div class="download-bar">
-    <a class="download-btn" href="#" target="_blank" rel="noopener noreferrer">
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <path d="M6.5 14L10 17.5L13.5 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M10 10V17.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-        <path d="M17.5 15C18.3 14.5 18.9 13.7 19.2 12.8C19.5 11.9 19.5 10.9 19.1 10C18.8 9.1 18.1 8.4 17.2 7.9C16.4 7.5 15.4 7.4 14.5 7.5H14C13.6 5.8 12.7 4.3 11.3 3.2C10 2.2 8.3 1.7 6.6 1.8C4.9 1.9 3.3 2.7 2.2 3.9C1 5.2 0.4 6.8 0.5 8.5C0.5 10.2 1.2 11.7 2.4 12.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+    <a class="download-btn" href="/resume.pdf" download rel="noopener noreferrer">
       <span>下載我的履歷</span>
+      <span class="arrow-circle">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M7 1v9M3.5 7.5L7 11l3.5-3.5" stroke="#2A2A2A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M1 13h12" stroke="#2A2A2A" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </span>
     </a>
+  </div>
   </div>
 </template>
 
 <script setup>
-import { onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useResume } from '@/composables/usePortfolioData'
-import { useLenis } from '@/composables/useLenis'
 import avatarImg from '@/assets/avatar.png'
 
 const router = useRouter()
 const { resume } = useResume()
-const { destroy } = useLenis()
-
-onMounted(() => {
-  destroy()
-})
 
 function close() {
   if (window.history.length > 1) {
@@ -163,7 +159,7 @@ function close() {
 .resume-container {
   position: relative;
   width: 100%;
-  max-width: 1680px;
+  max-width: 1200px;
 }
 
 .resume-close {
@@ -215,7 +211,7 @@ function close() {
   display: flex;
   flex-direction: column;
   gap: 24px;
-  padding: 70px 50px 70px 80px;
+  padding: 36px;
 }
 
 /* Hello + 頭貼 + 姓名 */
@@ -229,7 +225,7 @@ function close() {
 .hello-text {
   font-family: var(--font-heading);
   font-weight: 800;
-  font-size: 60px;
+  font-size: 46px;
   color: #0F1720;
   writing-mode: vertical-lr;
   transform: rotate(180deg);
@@ -239,8 +235,8 @@ function close() {
 }
 
 .avatar-wrap {
-  width: 134px;
-  height: 134px;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
   overflow: hidden;
   margin-right: 16px;
@@ -261,7 +257,7 @@ function close() {
 .name-zh {
   font-family: var(--font-body);
   font-weight: 900;
-  font-size: 35px;
+  font-size: 26px;
   color: #0F1720;
   line-height: 1.2;
   letter-spacing: 0.6px;
@@ -269,7 +265,7 @@ function close() {
 
 .name-en {
   font-family: var(--font-body);
-  font-size: 22px;
+  font-size: 16px;
   color: #7A7A7A;
   opacity: 0.9;
   line-height: 28px;
@@ -284,17 +280,17 @@ function close() {
 
 .intro-block p {
   font-family: var(--font-body);
-  font-size: 19px;
-  line-height: 30px;
+  font-size: 15px;
+  line-height: 24px;
   color: #0F1720;
   opacity: 0.9;
 }
 
-/* 區塊標題 */
+/* 標題 18px 粗體 */
 .section-title {
   font-family: var(--font-heading);
   font-weight: 800;
-  font-size: 28px;
+  font-size: 18px;
   color: #0F1720;
   letter-spacing: 0.6px;
   position: relative;
@@ -302,27 +298,28 @@ function close() {
   margin-bottom: 14px;
 }
 
+/* 標題旁藍色膠囊 icon */
 .blue-dot-title {
   position: absolute;
-  left: -21px;
-  top: 3px;
-  width: 12px;
-  height: 20px;
+  left: -16px;
+  top: 6px;
+  width: 8px;
+  height: 14px;
   background: #0060D5;
   border-radius: 23px;
 }
 
-/* 藍色圓點 */
+/* 小標題旁藍色圓點 icon */
 .blue-dot {
   display: inline-block;
-  width: 12px;
-  height: 12px;
-  min-width: 12px;
+  width: 8px;
+  height: 8px;
+  min-width: 8px;
   background: #0060D5;
   border-radius: 50%;
   position: absolute;
-  left: -21px;
-  top: 10px;
+  left: -16px;
+  top: 8px;
 }
 
 /* 技能 */
@@ -333,17 +330,17 @@ function close() {
 .skill-category {
   position: relative;
   font-family: var(--font-body);
-  font-weight: 900;
-  font-size: 19px;
-  line-height: 30px;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 24px;
   color: #0F1720;
   opacity: 0.9;
 }
 
 .skill-item {
   font-family: var(--font-body);
-  font-size: 19px;
-  line-height: 30px;
+  font-size: 15px;
+  line-height: 24px;
   color: #0F1720;
   opacity: 0.9;
 }
@@ -351,8 +348,8 @@ function close() {
 /* 學歷 */
 .edu-item {
   font-family: var(--font-body);
-  font-size: 19px;
-  line-height: 30px;
+  font-size: 15px;
+  line-height: 24px;
   color: #0F1720;
   opacity: 0.9;
 }
@@ -362,8 +359,8 @@ function close() {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  padding: 80px 80px 80px 60px;
+  gap: 8px;
+  padding: 36px;
 }
 
 /* 代表作品 */
@@ -376,9 +373,9 @@ function close() {
 .work-company {
   position: relative;
   font-family: var(--font-body);
-  font-weight: 900;
-  font-size: 21px;
-  line-height: 28px;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 24px;
   color: #0F1720;
   opacity: 0.9;
   letter-spacing: 0.6px;
@@ -387,8 +384,8 @@ function close() {
 
 .work-desc {
   font-family: var(--font-body);
-  font-size: 19px;
-  line-height: 35px;
+  font-size: 15px;
+  line-height: 26px;
   color: #0F1720;
   opacity: 0.9;
   margin-bottom: 9px;
@@ -396,16 +393,16 @@ function close() {
 
 .work-result-label {
   font-family: var(--font-body);
-  font-size: 19px;
-  line-height: 35px;
+  font-size: 15px;
+  line-height: 26px;
   color: #0F1720;
   opacity: 0.9;
 }
 
 .work-result {
   font-family: var(--font-body);
-  font-size: 19px;
-  line-height: 35px;
+  font-size: 15px;
+  line-height: 26px;
   color: #0F1720;
   opacity: 0.9;
 }
@@ -425,9 +422,9 @@ function close() {
 
 .exp-company {
   font-family: var(--font-body);
-  font-weight: 900;
-  font-size: 20px;
-  line-height: 28px;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 24px;
   color: #0F1720;
   opacity: 0.9;
   letter-spacing: 0.6px;
@@ -435,8 +432,8 @@ function close() {
 
 .exp-role {
   font-family: var(--font-body);
-  font-size: 16px;
-  line-height: 28px;
+  font-size: 13px;
+  line-height: 22px;
   color: #7A7A7A;
   opacity: 0.9;
 }
@@ -448,8 +445,8 @@ function close() {
 
 .exp-list li {
   font-family: var(--font-body);
-  font-size: 19px;
-  line-height: 30px;
+  font-size: 15px;
+  line-height: 24px;
   color: #0F1720;
   opacity: 0.9;
   margin-bottom: 12px;
@@ -473,25 +470,39 @@ function close() {
 .download-btn {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  background: linear-gradient(236deg, #58FF45 23%, #99FF8E 102%);
-  color: #0F1720;
-  padding: 14px 40px;
+  gap: 6px;
+  background: #58FF45;
+  color: #2A2A2A;
+  padding: 12px 16px 12px 20px;
   border-radius: 100px;
-  font-family: var(--font-heading);
-  font-weight: 700;
-  font-size: 16px;
+  font-size: 18px;
+  font-weight: 600;
   text-decoration: none;
   transition: transform 0.3s, box-shadow 0.3s;
 }
 
 .download-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 20px rgba(88, 255, 69, 0.3);
+  box-shadow: 0 8px 24px rgba(88, 255, 69, 0.3);
+}
+
+.arrow-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: #fff;
+  border-radius: 50%;
+}
+
+.arrow-circle img {
+  width: 12px;
+  height: auto;
 }
 
 /* section-block 通用 */
 .section-block {
-  padding-left: 21px;
+  padding-left: 16px;
 }
 </style>

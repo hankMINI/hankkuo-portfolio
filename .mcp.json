@@ -3,6 +3,10 @@
     "figma-mcp": {
       "type": "http",
       "url": "http://127.0.0.1:3845/mcp"
+    },
+    "TalkToFigma": {
+      "command": "/Users/hankkuo/.bun/bin/bunx",
+      "args": ["cursor-talk-to-figma-mcp@latest"]
     }
   }
 }

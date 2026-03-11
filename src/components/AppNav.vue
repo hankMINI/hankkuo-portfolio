@@ -1,7 +1,7 @@
 <template>
-  <nav class="nav" :class="{ visible: isVisible, 'menu-open': menuOpen }">
+  <nav class="nav" :class="{ 'menu-open': menuOpen }">
     <div class="nav-inner">
-      <div class="logo">Hank Portfolio</div>
+      <div class="logo" @click="reload" style="cursor: pointer;">Hank Portfolio</div>
 
       <!-- Hamburger (mobile) -->
       <button class="hamburger" :class="{ open: menuOpen }" @click="toggleMenu" aria-label="選單">
@@ -39,13 +39,7 @@
 
 <script setup>
 import { ref, nextTick } from 'vue'
-import { useLenis } from '@/composables/useLenis'
 
-defineProps({
-  isVisible: { type: Boolean, default: false }
-})
-
-const { scrollTo } = useLenis()
 const menuOpen = ref(false)
 const itemsVisible = ref([false, false])
 
@@ -80,12 +74,17 @@ function closeMenu() {
   }, 300)
 }
 
+function reload() {
+  window.location.href = '/'
+}
+
 function scrollToSection(selector) {
   const target = document.querySelector(selector)
   if (target) {
     closeMenu()
     setTimeout(() => {
-      scrollTo(target, { offset: -80, duration: 1.5 })
+      const y = target.getBoundingClientRect().top + window.scrollY - 110
+      window.scrollTo({ top: y, behavior: 'smooth' })
     }, 400)
   }
 }
@@ -101,18 +100,9 @@ function scrollToSection(selector) {
   background: rgba(15, 23, 32, 0.7);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  opacity: 0;
-  filter: blur(10px);
-  transition: opacity 1.5s cubic-bezier(0.25, 0, 0.25, 1),
-              filter 1.5s cubic-bezier(0.25, 0, 0.25, 1),
-              background 0.6s cubic-bezier(0.25, 0, 0.25, 1),
+  transition: background 0.6s cubic-bezier(0.25, 0, 0.25, 1),
               backdrop-filter 0.6s cubic-bezier(0.25, 0, 0.25, 1),
               -webkit-backdrop-filter 0.6s cubic-bezier(0.25, 0, 0.25, 1);
-}
-
-.nav.visible {
-  opacity: 1;
-  filter: blur(0px);
 }
 
 .nav-inner {
@@ -288,16 +278,13 @@ function scrollToSection(selector) {
   .mobile-menu-item {
     opacity: 0;
     transform: translateY(30px);
-    filter: blur(8px);
     transition: opacity 0.5s cubic-bezier(0.25, 0, 0.25, 1),
-                transform 0.5s cubic-bezier(0.25, 0, 0.25, 1),
-                filter 0.5s cubic-bezier(0.25, 0, 0.25, 1);
+                transform 0.5s cubic-bezier(0.25, 0, 0.25, 1);
   }
 
   .mobile-menu-item.show {
     opacity: 1;
     transform: translateY(0);
-    filter: blur(0px);
   }
 
   .mobile-menu-item a {

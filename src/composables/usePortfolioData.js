@@ -1,35 +1,17 @@
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useSingleType, useCollection, getStrapiMediaUrl } from './useStrapiApi'
 
-// Static fallbacks
+// Static data (不透過 CMS 管理)
 import { profile as staticProfile } from '@/data/profile'
-import { experiences as staticExperiences } from '@/data/experiences'
 import { skillCards as staticSkillCards } from '@/data/skills'
+
+// Static fallbacks (CMS 離線時使用)
+import { experiences as staticExperiences } from '@/data/experiences'
 import { projects as staticProjects } from '@/data/projects'
 import { resume as staticResume } from '@/data/resume'
 
 export function useProfile() {
-  const { data, loading, error } = useSingleType('profile', {
-    params: { populate: '*' },
-    fallback: staticProfile,
-  })
-
-  const profile = computed(() => {
-    const d = data.value
-    if (!d || !d.documentId) return staticProfile
-    return {
-      name: d.name,
-      title: d.title || [],
-      intro: d.intro || '',
-      skills: d.skills || [],
-      contact: {
-        phone: d.contact?.phone || '',
-        email: d.contact?.email || '',
-      },
-    }
-  })
-
-  return { profile, loading, error }
+  return { profile: ref(staticProfile), loading: ref(false), error: ref(null) }
 }
 
 export function useExperiences() {
@@ -57,33 +39,16 @@ export function useExperiences() {
 }
 
 export function useSkillCards() {
-  const { data, loading, error } = useCollection('skill-cards', {
-    params: { populate: '*', 'sort': 'sortOrder:asc' },
-    fallback: staticSkillCards,
-  })
-
-  const skillCards = computed(() => {
-    const items = data.value
-    if (!items?.length || !items[0].documentId) return staticSkillCards
-    return items.map(card => ({
-      label: card.label,
-      highlight: card.highlight || false,
-      items: card.items || [],
-      tools: card.tools || [],
-    }))
-  })
-
-  return { skillCards, loading, error }
+  return { skillCards: ref(staticSkillCards), loading: ref(false), error: ref(null) }
 }
 
 export function useProjects() {
   const { data, loading, error } = useCollection('projects', {
     params: {
-      'populate[coverImage]': '*',
-      'populate[images]': '*',
-      'populate[meta]': '*',
-      'populate[detail][populate][links]': '*',
-      'populate[detail][populate][designSections]': '*',
+      'populate[0]': 'coverImage',
+      'populate[1]': 'images',
+      'populate[2]': 'meta',
+      'populate[3]': 'detail',
       'sort': 'sortOrder:asc',
     },
     fallback: staticProjects,

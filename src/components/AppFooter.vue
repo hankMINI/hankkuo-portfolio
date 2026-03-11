@@ -1,14 +1,14 @@
 <template>
-  <footer class="footer" ref="sectionRef" :class="{ visible: isVisible }">
+  <footer class="footer">
     <!-- Thanks For Watching 區塊 -->
     <div class="thanks-section">
-      <div class="thanks-pill thanks-green" :class="{ 'fade-in': childrenVisible[0] }">Thanks</div>
-      <div class="thanks-pill thanks-blue" :class="{ 'fade-in': childrenVisible[1] }">For</div>
-      <div class="thanks-pill thanks-black" :class="{ 'fade-in': childrenVisible[2] }">Watching</div>
+      <div class="thanks-pill thanks-green" v-reveal>Thanks</div>
+      <div class="thanks-pill thanks-blue" v-reveal>For</div>
+      <div class="thanks-pill thanks-black" v-reveal>Watching</div>
     </div>
 
     <!-- 聯絡資訊 -->
-    <div class="contact-bar" :class="{ 'fade-in': childrenVisible[3] }">
+    <div class="contact-bar" v-reveal>
       <div class="contact-bar-inner">
         <div class="contact-title">GET IN<br>TOUCH</div>
         <div class="contact-info">
@@ -25,26 +25,9 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
 import { useProfile } from '@/composables/usePortfolioData'
 
 const { profile } = useProfile()
-
-const props = defineProps({
-  isVisible: { type: Boolean, default: false }
-})
-
-const childrenVisible = ref([false, false, false, false])
-
-watch(() => props.isVisible, (val) => {
-  if (val) {
-    childrenVisible.value.forEach((_, i) => {
-      setTimeout(() => { childrenVisible.value[i] = true }, i * 300)
-    })
-  } else {
-    childrenVisible.value = [false, false, false, false]
-  }
-})
 </script>
 
 <style scoped>
@@ -54,18 +37,6 @@ watch(() => props.isVisible, (val) => {
   align-items: center;
   gap: 64px;
   padding-top: 80px;
-  opacity: 0;
-  filter: blur(10px);
-  transform: translateY(30px);
-  transition: opacity 1.5s cubic-bezier(0.25, 0, 0.25, 1),
-              filter 1.5s cubic-bezier(0.25, 0, 0.25, 1),
-              transform 1.5s cubic-bezier(0.25, 0, 0.25, 1);
-}
-
-.footer.visible {
-  opacity: 1;
-  filter: blur(0px);
-  transform: translateY(0);
 }
 
 .thanks-section {
@@ -92,16 +63,6 @@ watch(() => props.isVisible, (val) => {
   left: 45px;
   background: linear-gradient(236deg, #58FF45 23%, #99FF8E 102%);
   color: #0F1720;
-  opacity: 0;
-  filter: blur(10px);
-  transform: translateY(20px);
-  transition: opacity 1s cubic-bezier(0.25, 0, 0.25, 1), filter 1s cubic-bezier(0.25, 0, 0.25, 1), transform 1s cubic-bezier(0.25, 0, 0.25, 1);
-}
-
-.thanks-green.fade-in {
-  opacity: 1;
-  filter: blur(0px);
-  transform: translateY(0);
 }
 
 .thanks-blue {
@@ -109,16 +70,7 @@ watch(() => props.isVisible, (val) => {
   left: 108px;
   background: linear-gradient(205deg, #316FFF 4%, #2B68F8 57%, #0039C8 110%);
   color: #fff;
-  opacity: 0;
-  filter: blur(10px);
-  transform: rotate(-25deg) translateY(20px);
-  transition: opacity 1s cubic-bezier(0.25, 0, 0.25, 1), filter 1s cubic-bezier(0.25, 0, 0.25, 1), transform 1s cubic-bezier(0.25, 0, 0.25, 1);
-}
-
-.thanks-blue.fade-in {
-  opacity: 1;
-  filter: blur(0px);
-  transform: rotate(-25deg) translateY(0);
+  transform: rotate(-25deg);
 }
 
 .thanks-black {
@@ -126,16 +78,7 @@ watch(() => props.isVisible, (val) => {
   left: 0;
   background: #000;
   color: #58FF45;
-  opacity: 0;
-  filter: blur(10px);
-  transform: rotate(4deg) translateY(20px);
-  transition: opacity 1s cubic-bezier(0.25, 0, 0.25, 1), filter 1s cubic-bezier(0.25, 0, 0.25, 1), transform 1s cubic-bezier(0.25, 0, 0.25, 1);
-}
-
-.thanks-black.fade-in {
-  opacity: 1;
-  filter: blur(0px);
-  transform: rotate(4deg) translateY(0);
+  transform: rotate(4deg);
 }
 
 .contact-bar {
@@ -147,16 +90,6 @@ watch(() => props.isVisible, (val) => {
   justify-content: center;
   gap: 200px;
   padding: 24px 80px;
-  opacity: 0;
-  filter: blur(10px);
-  transform: translateY(20px);
-  transition: opacity 1s cubic-bezier(0.25, 0, 0.25, 1), filter 1s cubic-bezier(0.25, 0, 0.25, 1), transform 1s cubic-bezier(0.25, 0, 0.25, 1);
-}
-
-.contact-bar.fade-in {
-  opacity: 1;
-  filter: blur(0px);
-  transform: translateY(0);
 }
 
 .contact-bar-inner {
@@ -243,26 +176,17 @@ watch(() => props.isVisible, (val) => {
   }
   .thanks-green {
     left: 50%;
-    transform: translateX(-50%) translateY(20px);
-  }
-  .thanks-green.fade-in {
-    transform: translateX(-50%) translateY(0);
+    transform: translateX(-50%);
   }
   .thanks-blue {
     top: 36px;
     left: 44%;
-    transform: rotate(-25deg) translateX(-30%) translateY(20px);
-  }
-  .thanks-blue.fade-in {
-    transform: rotate(-25deg) translateX(-30%) translateY(0);
+    transform: rotate(-25deg) translateX(-30%);
   }
   .thanks-black {
     top: 112px;
     left: 58%;
-    transform: rotate(4deg) translateX(-60%) translateY(20px);
-  }
-  .thanks-black.fade-in {
-    transform: rotate(4deg) translateX(-60%) translateY(0);
+    transform: rotate(4deg) translateX(-60%);
   }
   .contact-bar {
     padding: 24px 20px;

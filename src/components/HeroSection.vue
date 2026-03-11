@@ -1,18 +1,18 @@
 <template>
   <header class="hero">
     <!-- 背景光暈 -->
-    <div class="hero-bg" :class="{ visible: isVisible }">
-      <div class="orb orb-blue" ref="orbBlue"></div>
-      <div class="orb orb-green" ref="orbGreen"></div>
-      <div class="orb orb-ambient" ref="orbAmbient"></div>
+    <div class="hero-bg">
+      <div class="orb orb-blue"></div>
+      <div class="orb orb-green"></div>
+      <div class="orb orb-ambient"></div>
     </div>
 
     <!-- 主內容 -->
-    <div class="hero-content" ref="heroContent" :class="{ visible: isVisible }">
+    <div class="hero-content">
       <!-- 標題區塊 -->
-      <div class="title-wrapper">
+      <div class="title-wrapper" v-reveal>
         <!-- 燈泡 + 搜尋裝飾 -->
-        <div class="deco-bulb" ref="decoBulb">
+        <div class="deco-bulb">
           <img :src="bulbImg" class="deco-bulb-img" alt="">
           <img :src="searchImg" class="deco-bulb-search" alt="">
           <div class="deco-bulb-glass"></div>
@@ -22,7 +22,7 @@
         <img :src="titleLines" class="deco-lines" alt="">
 
         <!-- 游標 + Hank 標籤 -->
-        <div class="deco-cursor" ref="decoCursor">
+        <div class="deco-cursor">
           <img :src="cursorHank" alt="">
         </div>
 
@@ -33,20 +33,20 @@
       </div>
 
       <!-- 頭貼 (mobile only) -->
-      <div class="mobile-avatar">
+      <div class="mobile-avatar" v-reveal>
         <img :src="avatarImg" alt="Hank">
       </div>
 
       <!-- 介紹文字 -->
-      <p class="intro">{{ profile.intro }}</p>
+      <p class="intro" v-reveal>{{ profile.intro }}</p>
 
       <!-- 技能標籤 -->
-      <div class="skill-tags">
+      <div class="skill-tags" v-reveal>
         <span class="tag" v-for="skill in profile.skills" :key="skill">{{ skill }}</span>
       </div>
 
       <!-- CTA 按鈕 (desktop/tablet inline) -->
-      <CtaButton class="hero-cta-inline" href="/resume" @click.prevent="goToResume">查看我的履歷</CtaButton>
+      <CtaButton v-reveal class="hero-cta-inline" href="/resume" @click.prevent="goToResume">查看我的履歷</CtaButton>
     </div>
   </header>
 
@@ -62,12 +62,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useProfile } from '@/composables/usePortfolioData'
 
 const { profile } = useProfile()
-import { useLenis } from '@/composables/useLenis'
 import CtaButton from './CtaButton.vue'
 
 import bulbImg from '@/assets/燈泡圖片.png'
@@ -77,143 +75,16 @@ import cursorHank from '@/assets/cursor-hank.svg'
 import avatarImg from '@/assets/avatar.png'
 import arrowIcon from '@/assets/arrow-icon.svg'
 
-defineProps({
-  isVisible: { type: Boolean, default: false }
-})
-
 const router = useRouter()
-const { scrollTo } = useLenis()
-
-const heroContent = ref(null)
-const decoBulb = ref(null)
-const decoCursor = ref(null)
-const orbBlue = ref(null)
-const orbGreen = ref(null)
-const orbAmbient = ref(null)
-
-// Mobile fixed CTA: show on scroll down, hide on scroll up
-const ctaFixedVisible = ref(false)
-let lastScrollY = 0
 
 function goToResume() {
   router.push('/resume')
 }
-
-// Scroll animation state
-let currentScale = 1, targetScale = 1
-let currentOpacity = 1, targetOpacity = 1
-let currentBlur = 0, targetBlur = 0
-let currentBlueX = 0, currentBlueY = 0, targetBlueX = 0, targetBlueY = 0
-let currentGreenX = 0, currentGreenY = 0, targetGreenX = 0, targetGreenY = 0
-let currentAmbientX = 0, currentAmbientY = 0, targetAmbientX = 0, targetAmbientY = 0
-let currentOrbOpacity = 1, targetOrbOpacity = 1
-let currentBulbY = 0, targetBulbY = 0
-let currentCursorY = 0, targetCursorY = 0
-let transitionCleared = false
-let rafId = null
-
-function lerp(start, end, factor) {
-  return start + (end - start) * factor
-}
-
-function updateEffect() {
-  const el = heroContent.value
-  if (!el) { rafId = requestAnimationFrame(updateEffect); return }
-
-  if (!transitionCleared && el.classList.contains('visible')) {
-    setTimeout(() => { el.style.transition = 'none' }, 1000)
-    transitionCleared = true
-  }
-
-  const time = Date.now() * 0.001
-  const hero = el.closest('.hero')
-  if (!hero) { rafId = requestAnimationFrame(updateEffect); return }
-  const heroHeight = hero.offsetHeight
-  const scrollProgress = Math.min(Math.max(window.scrollY / heroHeight, 0), 1)
-
-  // Hero Content 縮小 + 淡出
-  targetScale = 1 - scrollProgress * 0.15
-  currentScale = lerp(currentScale, targetScale, 0.18)
-
-  const projects = document.querySelector('#projects')
-  if (projects) {
-    const fadeStart = heroHeight * 0.3
-    const fadeEnd = heroHeight
-    const fadeProgress = Math.min(Math.max((window.scrollY - fadeStart) / (fadeEnd - fadeStart), 0), 1)
-    targetOpacity = 1 - fadeProgress
-    targetBlur = fadeProgress * 12
-  }
-  currentOpacity = lerp(currentOpacity, targetOpacity, 0.15)
-  currentBlur = lerp(currentBlur, targetBlur, 0.15)
-
-  if (el.classList.contains('visible')) {
-    el.style.transform = `scale(${currentScale})`
-    el.style.opacity = currentOpacity
-    el.style.filter = `blur(${currentBlur}px)`
-  }
-
-  // 光暈動態
-  const bBlue = Math.sin(time * 0.3) * 12
-  const bGreen = Math.sin(time * 0.25 + 1.2) * 10
-  const bAmbient = Math.sin(time * 0.2 + 2.5) * 8
-
-  targetBlueX = scrollProgress * -60 + bBlue
-  targetBlueY = scrollProgress * -80 + bBlue * 0.7
-  targetGreenX = scrollProgress * 50 + bGreen
-  targetGreenY = scrollProgress * -180 + bGreen * 0.8
-  targetAmbientX = scrollProgress * -30 + bAmbient
-  targetAmbientY = scrollProgress * -120 + bAmbient * 0.6
-
-  currentBlueX = lerp(currentBlueX, targetBlueX, 0.08)
-  currentBlueY = lerp(currentBlueY, targetBlueY, 0.08)
-  currentGreenX = lerp(currentGreenX, targetGreenX, 0.14)
-  currentGreenY = lerp(currentGreenY, targetGreenY, 0.14)
-  currentAmbientX = lerp(currentAmbientX, targetAmbientX, 0.1)
-  currentAmbientY = lerp(currentAmbientY, targetAmbientY, 0.1)
-
-  if (orbBlue.value) orbBlue.value.style.transform = `translate(${currentBlueX}px, ${currentBlueY}px) scale(${1 + scrollProgress * 0.1})`
-  if (orbGreen.value) orbGreen.value.style.transform = `translate(${currentGreenX}px, ${currentGreenY}px) scale(${1 + scrollProgress * 0.08})`
-  if (orbAmbient.value) orbAmbient.value.style.transform = `translate(${currentAmbientX}px, ${currentAmbientY}px) scale(${1 + scrollProgress * 0.15})`
-
-  targetOrbOpacity = 1 - scrollProgress * 0.8
-  currentOrbOpacity = lerp(currentOrbOpacity, targetOrbOpacity, 0.12)
-  if (orbBlue.value) orbBlue.value.style.opacity = 0.5 * currentOrbOpacity
-  if (orbGreen.value) orbGreen.value.style.opacity = 0.3 * currentOrbOpacity
-  if (orbAmbient.value) orbAmbient.value.style.opacity = 0.25 * currentOrbOpacity
-
-  // 裝飾元素往上浮
-  targetBulbY = window.scrollY * -0.15
-  currentBulbY = lerp(currentBulbY, targetBulbY, 0.15)
-  if (decoBulb.value) decoBulb.value.style.transform = `translateY(${currentBulbY}px)`
-
-  targetCursorY = window.scrollY * -0.2
-  currentCursorY = lerp(currentCursorY, targetCursorY, 0.15)
-  if (decoCursor.value) decoCursor.value.style.transform = `translateY(${currentCursorY}px)`
-
-  // Mobile fixed CTA: detect scroll direction in RAF (Lenis may not fire native scroll events)
-  const currentY = window.scrollY
-  if (currentY > 100 && currentY > lastScrollY + 2) {
-    ctaFixedVisible.value = true
-  } else if (currentY < lastScrollY - 2) {
-    ctaFixedVisible.value = false
-  }
-  lastScrollY = currentY
-
-  rafId = requestAnimationFrame(updateEffect)
-}
-
-onMounted(() => {
-  updateEffect()
-})
-onUnmounted(() => {
-  if (rafId) cancelAnimationFrame(rafId)
-})
 </script>
 
 <style scoped>
 .hero {
-  position: sticky;
-  top: 0;
+  position: relative;
   min-height: auto;
   display: flex;
   flex-direction: column;
@@ -229,22 +100,12 @@ onUnmounted(() => {
   width: 100%;
   height: 100vh;
   z-index: -1;
-  overflow: hidden;
   background: #0F1720;
-  opacity: 0;
-  filter: blur(10px);
-  transition: opacity 1s cubic-bezier(0.25, 0, 0.25, 1), filter 1s cubic-bezier(0.25, 0, 0.25, 1);
-}
-
-.hero-bg.visible {
-  opacity: 1;
-  filter: blur(0px);
 }
 
 .orb {
   position: absolute;
   border-radius: 50%;
-  will-change: transform;
   pointer-events: none;
 }
 
@@ -283,15 +144,6 @@ onUnmounted(() => {
   margin-top: 150px;
   max-width: 908px;
   text-align: center;
-  will-change: transform;
-  opacity: 0;
-  filter: blur(10px);
-  transition: opacity 1.5s cubic-bezier(0.25, 0, 0.25, 1), filter 1.5s cubic-bezier(0.25, 0, 0.25, 1);
-}
-
-.hero-content.visible {
-  opacity: 1;
-  filter: blur(0px);
 }
 
 .title-wrapper {
@@ -306,7 +158,6 @@ onUnmounted(() => {
   width: 210px;
   height: 210px;
   pointer-events: none;
-  will-change: transform;
 }
 
 .deco-bulb-glass {
@@ -358,7 +209,6 @@ onUnmounted(() => {
   right: 220px;
   top: 80px;
   pointer-events: none;
-  will-change: transform;
 }
 
 h1 {
@@ -438,8 +288,7 @@ h1 span {
 
 @media (max-width: 767px) {
   .hero {
-    position: sticky;
-    top: 0;
+    position: relative;
     padding-top: 60px;
     padding-bottom: 30px;
   }

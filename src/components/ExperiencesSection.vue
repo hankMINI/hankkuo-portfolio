@@ -1,40 +1,39 @@
 <template>
-  <section class="experiences" id="resume" ref="sectionRef" :class="{ visible: isVisible }">
-    <div class="section-header child-fade" :class="{ 'fade-in': childrenVisible[0] }">
+  <section class="experiences" id="resume">
+    <div class="section-header" v-reveal>
       <h2>My Experiences</h2>
     </div>
 
-    <div class="experience-list">
+    <div class="timeline">
       <div
         v-for="(exp, i) in experiences"
         :key="exp.id"
-        class="experience-card child-fade"
-        :class="{ expanded: expandedId === exp.id, 'fade-in': childrenVisible[i + 1] }"
+        class="timeline-item"
+        v-reveal
       >
-        <div class="exp-header" @click="toggle(exp.id)">
-          <span class="company-dot"></span>
-          <div class="exp-info">
-            <h3>{{ exp.company }}</h3>
-            <span class="exp-role">{{ exp.role }}  {{ exp.dateRange }}</span>
-          </div>
-          <button class="expand-btn">
-            <img :src="arrowRight" alt="">
-          </button>
-        </div>
-        <div class="exp-content" :class="{ open: expandedId === exp.id }" v-if="exp.highlights.length || exp.responsibilities.length || exp.works">
-          <div class="exp-block highlights-block" v-if="exp.highlights.length">
+        <!-- 時間軸圓點 -->
+        <div class="timeline-dot"></div>
+
+        <!-- 內容 -->
+        <div class="timeline-content">
+          <h3 class="timeline-company">{{ exp.company }}</h3>
+          <span class="timeline-role">{{ exp.role }}｜{{ exp.dateRange }}</span>
+
+          <div class="timeline-block" v-if="exp.highlights.length">
             <span class="block-label">核心亮點</span>
             <ul>
               <li v-for="item in exp.highlights" :key="item">{{ item }}</li>
             </ul>
           </div>
-          <div class="exp-block" v-if="exp.responsibilities.length">
+
+          <div class="timeline-block" v-if="exp.responsibilities.length">
             <span class="block-label">主要職責</span>
             <ul>
               <li v-for="item in exp.responsibilities" :key="item">{{ item }}</li>
             </ul>
           </div>
-          <div class="exp-block works-block" v-if="exp.works">
+
+          <div class="timeline-block" v-if="exp.works">
             <span class="block-label">代表作品</span>
             <p v-html="exp.works.replace(/\n/g, '<br>')"></p>
           </div>
@@ -45,40 +44,9 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
 import { useExperiences } from '@/composables/usePortfolioData'
-import arrowRight from '@/assets/fe_arrow-right.svg'
 
 const { experiences } = useExperiences()
-
-const props = defineProps({
-  isVisible: { type: Boolean, default: false }
-})
-
-const expandedId = ref(experiences.value[0]?.id || null)
-const childrenVisible = ref(Array(experiences.value.length + 1).fill(false))
-
-function toggle(id) {
-  expandedId.value = expandedId.value === id ? null : id
-}
-
-// 當 experiences 數量變化時，更新動畫陣列和預設展開項
-watch(experiences, (val) => {
-  childrenVisible.value = Array(val.length + 1).fill(false)
-  if (!expandedId.value && val.length) {
-    expandedId.value = val[0].id
-  }
-})
-
-watch(() => props.isVisible, (val) => {
-  if (val) {
-    childrenVisible.value.forEach((_, i) => {
-      setTimeout(() => { childrenVisible.value[i] = true }, i * 300)
-    })
-  } else {
-    childrenVisible.value = Array(experiences.value.length + 1).fill(false)
-  }
-})
 </script>
 
 <style scoped>
@@ -87,25 +55,10 @@ watch(() => props.isVisible, (val) => {
   margin: 0 auto;
   padding: 0px 80px 120px 80px;
   position: relative;
-  opacity: 0;
-  filter: blur(10px);
-  transform: translateY(30px);
-  transition: opacity 1.5s cubic-bezier(0.25, 0, 0.25, 1),
-              filter 1.5s cubic-bezier(0.25, 0, 0.25, 1),
-              transform 1.5s cubic-bezier(0.25, 0, 0.25, 1);
-}
-
-.experiences.visible {
-  opacity: 1;
-  filter: blur(0px);
-  transform: translateY(0);
 }
 
 .section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 42px;
+  margin-bottom: 48px;
 }
 
 .section-header h2 {
@@ -115,94 +68,91 @@ watch(() => props.isVisible, (val) => {
   color: #0F1720;
 }
 
-.experience-list {
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
+/* 時間軸 */
+.timeline {
+  position: relative;
+  padding-left: 32px;
 }
 
-.experience-card {
-  background: #fff;
-  border-radius: 24px;
-  overflow: hidden;
-  color: #0F1720;
-  padding: 32px;
+/* 時間軸線 */
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 8px;
+  bottom: 0;
+  width: 0;
+  border-left: 2px dashed rgba(15, 23, 32, 0.2);
 }
 
-.exp-header {
+.timeline-item {
+  position: relative;
+  padding-bottom: 48px;
+}
+
+.timeline-item:last-child {
+  padding-bottom: 0;
+}
+
+/* 圓點：中間實心 + 外圈光暈 */
+.timeline-dot {
+  position: absolute;
+  left: -32px;
+  top: 4px;
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  cursor: pointer;
+  justify-content: center;
+  transform: translateX(-4px);
+  z-index: 1;
 }
 
-.company-dot {
-  width: 12px;
-  height: 12px;
-  min-width: 12px;
-  background: #22C55E;
+.timeline-dot::before {
+  content: '';
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  background: rgba(144, 238, 144, 0.25);
   border-radius: 50%;
 }
 
-.exp-info {
-  flex: 1;
+.timeline-dot::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: #7AE858;
+  border-radius: 50%;
 }
 
-.exp-info h3 {
-  font-size: 22px;
-  font-weight: 600;
-}
-
-.exp-role {
-  font-size: 16px;
-  color: #7A7A7A;
-  line-height: 30px;
-}
-
-.expand-btn {
-  width: 74px;
-  height: 74px;
-  border: none;
-  background: transparent;
-  cursor: pointer;
+/* 內容 */
+.timeline-content {
   display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  transition: transform 0.3s;
+  flex-direction: column;
+  gap: 0;
+  padding-left: 16px;
 }
 
-.expand-btn img {
-  width: 24px;
-  height: 24px;
-  transform: rotate(90deg);
-  transition: transform 0.3s;
+.timeline-company {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0F1720;
+  line-height: 1.4;
 }
 
-.experience-card.expanded .expand-btn img {
-  transform: rotate(-90deg);
-}
-
-.exp-content {
-  max-height: 0;
-  overflow: hidden;
-  opacity: 0;
-  transition: max-height 0.5s cubic-bezier(0.25, 0, 0.25, 1),
-              opacity 0.4s cubic-bezier(0.25, 0, 0.25, 1),
-              margin-top 0.5s cubic-bezier(0.25, 0, 0.25, 1);
-  margin-top: 0;
-}
-
-.exp-content.open {
-  max-height: 1200px;
-  opacity: 1;
-  margin-top: 20px;
-}
-
-.exp-block {
+.timeline-role {
+  font-size: 15px;
+  color: #7A7A7A;
+  margin-top: 4px;
   margin-bottom: 20px;
 }
 
-.exp-block:last-child {
+.timeline-block {
+  margin-bottom: 16px;
+}
+
+.timeline-block:last-child {
   margin-bottom: 0;
 }
 
@@ -212,43 +162,27 @@ watch(() => props.isVisible, (val) => {
   color: #fff;
   padding: 4px 12px;
   border-radius: 8px;
-  font-size: 16px;
-  font-weight: 900;
-  line-height: 30px;
-  margin-bottom: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 24px;
+  margin-bottom: 10px;
 }
 
-.exp-block ul {
+.timeline-block ul {
   list-style: disc;
-  padding-left: 24px;
+  padding-left: 20px;
 }
 
-.exp-block li {
-  font-size: 18px;
-  line-height: 36px;
+.timeline-block li {
+  font-size: 16px;
+  line-height: 32px;
   color: #0F1720;
 }
 
-.exp-block p {
+.timeline-block p {
   font-size: 16px;
   line-height: 30px;
   color: #0F1720;
-}
-
-/* child-fade */
-.child-fade {
-  opacity: 0;
-  filter: blur(10px);
-  transform: translateY(20px);
-  transition: opacity 1s cubic-bezier(0.25, 0, 0.25, 1),
-              filter 1s cubic-bezier(0.25, 0, 0.25, 1),
-              transform 1s cubic-bezier(0.25, 0, 0.25, 1);
-}
-
-.child-fade.fade-in {
-  opacity: 1;
-  filter: blur(0px);
-  transform: translateY(0);
 }
 
 @media (max-width: 1199px) {
@@ -258,14 +192,8 @@ watch(() => props.isVisible, (val) => {
   .section-header h2 {
     font-size: 32px;
   }
-  .experience-list {
-    gap: 24px;
-  }
   .section-header {
     margin-bottom: 40px;
-  }
-  .experience-card {
-    padding: 36px;
   }
 }
 
@@ -279,42 +207,39 @@ watch(() => props.isVisible, (val) => {
   .section-header h2 {
     font-size: 24px;
   }
-  .experience-list {
-    gap: 16px;
+  .timeline {
+    padding-left: 24px;
   }
-  .experience-card {
-    padding: 24px;
-    border-radius: 16px;
+  .timeline::before {
+    left: 4px;
   }
-  .exp-header {
-    flex-wrap: wrap;
+  .timeline-dot {
+    left: -24px;
+    transform: translateX(-5px);
   }
-  .company-dot {
-    width: 10px;
-    height: 10px;
-    min-width: 10px;
+  .timeline-dot::before {
+    width: 18px;
+    height: 18px;
   }
-  .exp-info h3 {
-    font-size: 16px;
+  .timeline-dot::after {
+    width: 8px;
+    height: 8px;
   }
-  .exp-role {
+  .timeline-item {
+    padding-bottom: 36px;
+  }
+  .timeline-company {
+    font-size: 18px;
+  }
+  .timeline-role {
     font-size: 14px;
-    line-height: 20px;
   }
-  .expand-btn {
-    width: 48px;
-    height: 48px;
-  }
-  .block-label {
-    font-size: 14px;
-    line-height: 24px;
-  }
-  .exp-block li {
-    font-size: 16px;
+  .timeline-block li {
+    font-size: 15px;
     line-height: 28px;
   }
-  .exp-block p {
-    font-size: 16px;
+  .timeline-block p {
+    font-size: 15px;
     line-height: 28px;
   }
 }

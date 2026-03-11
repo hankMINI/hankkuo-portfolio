@@ -1,15 +1,15 @@
 <template>
-  <section class="expertise" ref="sectionRef" :class="{ visible: isVisible }">
+  <section class="expertise">
     <!-- 毛玻璃裝飾 -->
-    <div class="glass-decoration" ref="glassDeco"></div>
+    <div class="glass-decoration"></div>
 
-    <div class="expertise-inner" ref="expertiseInner">
+    <div class="expertise-inner">
       <!-- 左上背景裝飾 -->
       <img :src="bgDeco" class="bg-deco" alt="">
-      <div class="expertise-header">
-        <h2 class="child-fade" :class="{ 'fade-in': childrenVisible[0] }">Expertise & Skills</h2>
-        <p class="subtitle child-fade" :class="{ 'fade-in': childrenVisible[1] }">核心能力</p>
-        <p class="desc child-fade" :class="{ 'fade-in': childrenVisible[2] }">從策略洞察到產品落地，以邏輯驅動設計，創造兼具美學與商業價值的數位體驗</p>
+      <div class="expertise-header" v-reveal>
+        <h2>Expertise & Skills</h2>
+        <p class="subtitle">核心能力</p>
+        <p class="desc">從策略洞察到產品落地，以邏輯驅動設計，創造兼具美學與商業價值的數位體驗</p>
       </div>
 
       <div class="skill-carousel">
@@ -17,8 +17,9 @@
           <div
             v-for="(card, i) in skillCards"
             :key="card.label"
-            class="skill-card child-fade"
-            :class="{ 'skill-card-highlight': card.highlight, 'fade-in': childrenVisible[3 + i] }"
+            class="skill-card"
+            :class="{ 'skill-card-highlight': card.highlight }"
+            ref="cardRefs"
           >
             <div class="card-label" :class="{ 'card-label-green': card.highlight }">{{ card.label }}</div>
             <ul class="card-list">
@@ -48,7 +49,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useSkillCards } from '@/composables/usePortfolioData'
 
 const { skillCards } = useSkillCards()
@@ -56,15 +57,8 @@ import MarqueeStrip from './MarqueeStrip.vue'
 import bgDeco from '@/assets/bg-decoration.png'
 import arrowIcon from '@/assets/fe_arrow-left.svg'
 
-const props = defineProps({
-  isVisible: { type: Boolean, default: false }
-})
-
-const sectionRef = ref(null)
-const glassDeco = ref(null)
-const expertiseInner = ref(null)
 const skillCardsRef = ref(null)
-const childrenVisible = ref(Array(6).fill(false))
+const cardRefs = ref([])
 
 // Mobile carousel
 const currentCard = ref(0)
@@ -105,123 +99,30 @@ function onCarouselScroll() {
   currentCard.value = closest
 }
 
-// 子元素依序進場
-watch(() => props.isVisible, (val) => {
-  if (val) {
-    childrenVisible.value.forEach((_, i) => {
-      setTimeout(() => { childrenVisible.value[i] = true }, i * 300)
-    })
-  } else {
-    childrenVisible.value = Array(6).fill(false)
-  }
-})
-
-// Glass decoration + expertise 3D 堆疊效果
-let currentGlassRotate = 18, targetGlassRotate = 18
-let currentGlassScale = 0.9, targetGlassScale = 0.9
-let currentExpRotateX = 0, targetExpRotateX = 0
-let currentExpTranslateY = 0, targetExpTranslateY = 0
-let rafId = null
-
-function lerp(a, b, t) { return a + (b - a) * t }
-
-function isMobile() {
-  return window.innerWidth <= 767
-}
-
-// 手機版動態計算 sticky top
-// stickyBuffer: 提前 stick 的距離，讓 section 停留一段才被蓋過
-const STICKY_BUFFER = -100
-function updateStickyTop() {
-  const section = sectionRef.value
-  if (!section || !isMobile()) {
-    if (section) section.style.top = ''
-    return
-  }
-  const sectionHeight = section.offsetHeight
-  const viewportHeight = window.innerHeight
-  if (sectionHeight > viewportHeight) {
-    section.style.top = `${-(sectionHeight - viewportHeight) + STICKY_BUFFER}px`
-  } else {
-    section.style.top = `${STICKY_BUFFER}px`
-  }
-}
-
-function onResize() {
-  updateStickyTop()
-}
-
-function updateGlassEffect() {
-  const section = sectionRef.value
-  if (!section) { rafId = requestAnimationFrame(updateGlassEffect); return }
-
-  const mobile = isMobile()
-  const expRect = section.getBoundingClientRect()
-
-  // Glass decoration（桌面版才有）
-  if (!mobile && glassDeco.value) {
-    const expProgress = Math.min(Math.max(1 - expRect.top / window.innerHeight, 0), 1)
-    targetGlassRotate = 18 - expProgress * 12
-    targetGlassScale = 0.9 + expProgress * 0.15
-    currentGlassRotate = lerp(currentGlassRotate, targetGlassRotate, 0.2)
-    currentGlassScale = lerp(currentGlassScale, targetGlassScale, 0.2)
-    glassDeco.value.style.transform = `translateX(-44%) rotate(${currentGlassRotate}deg) scale(${currentGlassScale})`
-  }
-
-  // 被蓋過時淡出（桌面 + 手機都要）
-  const contentWrap = document.querySelector('.content-wrap')
-  if (contentWrap && section.classList.contains('visible')) {
-    const contentWrapRect = contentWrap.getBoundingClientRect()
-    const expHeight = expRect.height
-    const startThreshold = expHeight * 0.35
-    const fadeRange = expHeight * 0.3
-    const overlap = expRect.bottom - contentWrapRect.top
-
-    if (overlap <= startThreshold) {
-      section.style.opacity = ''
-      targetExpRotateX = 0
-      targetExpTranslateY = 0
-    } else if (overlap >= startThreshold + fadeRange) {
-      section.style.opacity = '0'
-      targetExpRotateX = 4
-      targetExpTranslateY = -50
-    } else {
-      const fadeProgress = (overlap - startThreshold) / fadeRange
-      section.style.opacity = 1 - fadeProgress
-      targetExpRotateX = fadeProgress * 4
-      targetExpTranslateY = fadeProgress * -50
-    }
-
-    if (!mobile) {
-      // 桌面版：3D 旋轉
-      currentExpRotateX = lerp(currentExpRotateX, targetExpRotateX, 0.15)
-      if (expertiseInner.value) {
-        expertiseInner.value.style.transform = `perspective(800px) rotateX(${currentExpRotateX}deg)`
-      }
-    } else {
-      // 手機版：往上推動
-      currentExpTranslateY = lerp(currentExpTranslateY, targetExpTranslateY, 0.15)
-      if (expertiseInner.value) {
-        expertiseInner.value.style.transform = `translateY(${currentExpTranslateY}px)`
-      }
-    }
-  }
-
-  rafId = requestAnimationFrame(updateGlassEffect)
-}
-
 onMounted(() => {
-  updateGlassEffect()
-  updateStickyTop()
-  window.addEventListener('resize', onResize, { passive: true })
   if (skillCardsRef.value) {
     skillCardsRef.value.scrollTo({ left: 0 })
     skillCardsRef.value.addEventListener('scroll', onCarouselScroll, { passive: true })
   }
+
+  // 卡片進場動畫：只在首次滾動到此區塊時觸發
+  const cards = cardRefs.value
+  if (cards.length && skillCardsRef.value) {
+    cards.forEach(el => el.classList.add('reveal'))
+    const sectionObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          cards.forEach((el, i) => {
+            setTimeout(() => el.classList.add('revealed'), i * 200)
+          })
+          sectionObserver.disconnect()
+        }
+      })
+    }, { threshold: 0.15 })
+    sectionObserver.observe(skillCardsRef.value)
+  }
 })
 onUnmounted(() => {
-  if (rafId) cancelAnimationFrame(rafId)
-  window.removeEventListener('resize', onResize)
   if (skillCardsRef.value) {
     skillCardsRef.value.removeEventListener('scroll', onCarouselScroll)
   }
@@ -230,21 +131,12 @@ onUnmounted(() => {
 
 <style scoped>
 .expertise {
-  position: sticky;
-  top: 20px;
+  position: relative;
   z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   padding-top: 0;
-  opacity: 0;
-  filter: blur(10px);
-  transition: opacity 1.5s cubic-bezier(0.25, 0, 0.25, 1), filter 1.5s cubic-bezier(0.25, 0, 0.25, 1);
-}
-
-.expertise.visible {
-  opacity: 1;
-  filter: blur(0px);
 }
 
 .glass-decoration {
@@ -252,7 +144,6 @@ onUnmounted(() => {
   top: 21px;
   left: 48%;
   transform: translateX(-44%) rotate(18deg) scale(0.9);
-  will-change: transform;
   width: 1450px;
   height: 1152px;
   background: rgba(255, 255, 255, 0.1);
@@ -277,7 +168,6 @@ onUnmounted(() => {
   background: linear-gradient(208.488deg, rgb(49, 111, 255) 4.17%, rgb(43, 104, 248) 57.5%, rgb(0, 57, 200) 109.81%);
   overflow: hidden;
   transform-origin: bottom center;
-  will-change: transform;
 }
 
 .bg-deco {
@@ -329,20 +219,19 @@ onUnmounted(() => {
   z-index: 1;
   display: flex;
   gap: 32px;
-  align-items: center;
+  align-items: stretch;
 }
 
 .skill-card {
   background: #fff;
   border-radius: 32px;
   padding: 48px 32px 28px;
-  width: 100%;
+  flex: 1 1 0;
+  min-width: 0;
   position: relative;
   color: #000;
-}
-
-.skill-card-highlight {
-  margin-top: -40px;
+  display: flex;
+  flex-direction: column;
 }
 
 .card-label {
@@ -375,7 +264,8 @@ onUnmounted(() => {
 .card-tools {
   display: flex;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  margin-top: auto;
 }
 
 .tool-tag {
@@ -391,22 +281,6 @@ onUnmounted(() => {
 /* Carousel — hidden on desktop, visible on mobile */
 .carousel-nav {
   display: none;
-}
-
-/* child-fade */
-.child-fade {
-  opacity: 0;
-  filter: blur(10px);
-  transform: translateY(20px);
-  transition: opacity 1s cubic-bezier(0.25, 0, 0.25, 1),
-              filter 1s cubic-bezier(0.25, 0, 0.25, 1),
-              transform 1s cubic-bezier(0.25, 0, 0.25, 1);
-}
-
-.child-fade.fade-in {
-  opacity: 1;
-  filter: blur(0px);
-  transform: translateY(0);
 }
 
 @media (max-width: 1199px) {
@@ -453,15 +327,7 @@ onUnmounted(() => {
 
 @media (max-width: 767px) {
   .expertise {
-    position: sticky;
-    /* top 由 JS 動態計算 */
-    transform: translateY(30px);
-    transition: opacity 1.5s cubic-bezier(0.25, 0, 0.25, 1),
-                filter 1.5s cubic-bezier(0.25, 0, 0.25, 1),
-                transform 1.5s cubic-bezier(0.25, 0, 0.25, 1);
-  }
-  .expertise.visible {
-    transform: translateY(0);
+    position: relative;
   }
   .expertise-inner {
     width: 100%;
