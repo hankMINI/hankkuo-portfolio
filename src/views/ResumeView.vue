@@ -111,7 +111,7 @@
 
   <!-- 固定下載按鈕（放在 overlay 外面，避免 backdrop-filter 影響 fixed 定位） -->
   <div class="download-bar">
-    <a class="download-btn" href="/resume.pdf" download rel="noopener noreferrer">
+    <a class="download-btn" :href="pdfHref" download rel="noopener noreferrer">
       <span>下載我的履歷</span>
       <span class="arrow-circle">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -125,12 +125,16 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useResume } from '@/composables/usePortfolioData'
-import avatarImg from '@/assets/avatar.png'
+import staticAvatarImg from '@/assets/avatar.png'
 
 const router = useRouter()
 const { resume } = useResume()
+
+const avatarImg = computed(() => resume.value?.avatar || staticAvatarImg)
+const pdfHref = computed(() => resume.value?.resumePdf || '/resume.pdf')
 
 function close() {
   if (window.history.length > 1) {

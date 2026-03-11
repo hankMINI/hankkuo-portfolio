@@ -70,16 +70,7 @@ const totalSlides = ref(1)
 const slideRefs = ref([])
 
 // 顯示的專案列表（包括重複卡片，跟原版一致）
-const displayProjects = computed(() => {
-  const list = [...projects.value]
-  // 原版有重複的卡片
-  if (projects.value.length >= 4) {
-    list.push(projects.value[0]) // 重複第 1 個
-    list.push(projects.value[0]) // 再重複
-    list.push(projects.value[3]) // 重複第 4 個
-  }
-  return list
-})
+const displayProjects = computed(() => projects.value)
 
 function updateButtons(swiper) {
   if (prevBtn.value) {

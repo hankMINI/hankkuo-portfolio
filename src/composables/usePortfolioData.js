@@ -20,19 +20,24 @@ export function useExperiences() {
     fallback: staticExperiences,
   })
 
+  const staticExpMap = Object.fromEntries(staticExperiences.map(e => [e.id, e]))
+
   const experiences = computed(() => {
     const items = data.value
     if (!items?.length || !items[0].documentId) return staticExperiences
-    return items.map(exp => ({
-      id: exp.externalId,
-      logo: exp.logo ? getStrapiMediaUrl(exp.logo) : null,
-      company: exp.company,
-      role: exp.role || '',
-      dateRange: exp.dateRange || '',
-      highlights: exp.highlights || [],
-      responsibilities: exp.responsibilities || [],
-      works: exp.works || '',
-    }))
+    return items.map(exp => {
+      const fallback = staticExpMap[exp.externalId] || {}
+      return {
+        id: exp.externalId,
+        logo: exp.logo ? getStrapiMediaUrl(exp.logo) : (fallback.logo || null),
+        company: exp.company,
+        role: exp.role || '',
+        dateRange: exp.dateRange || '',
+        highlights: exp.highlights || [],
+        responsibilities: exp.responsibilities || [],
+        works: exp.works || '',
+      }
+    })
   })
 
   return { experiences, loading, error }
@@ -54,35 +59,40 @@ export function useProjects() {
     fallback: staticProjects,
   })
 
+  const staticProjectMap = Object.fromEntries(staticProjects.map(p => [p.id, p]))
+
   const projects = computed(() => {
     const items = data.value
     if (!items?.length || !items[0].documentId) return staticProjects
-    return items.map(p => ({
-      id: p.externalId,
-      tag: p.tag || '',
-      title: p.title,
-      subtitle: p.subtitle || '',
-      coverImage: p.coverImage ? getStrapiMediaUrl(p.coverImage) : null,
-      meta: p.meta
-        ? {
-            client: p.meta.client || '',
-            year: p.meta.year || '',
-            role: p.meta.role || '',
-            team: p.meta.team || '',
-          }
-        : {},
-      images: p.images?.map(img => getStrapiMediaUrl(img)) || [],
-      detail: p.detail
-        ? {
-            projectTypes: p.detail.projectTypes || [],
-            industryTypes: p.detail.industryTypes || [],
-            taskTags: p.detail.taskTags || [],
-            links: p.detail.links || [],
-            goal: p.detail.goal || '',
-            designSections: p.detail.designSections || [],
-          }
-        : null,
-    }))
+    return items.map(p => {
+      const fallback = staticProjectMap[p.externalId] || {}
+      return {
+        id: p.externalId,
+        tag: p.tag || '',
+        title: p.title,
+        subtitle: p.subtitle || '',
+        coverImage: p.coverImage ? getStrapiMediaUrl(p.coverImage) : (fallback.coverImage || null),
+        meta: p.meta
+          ? {
+              client: p.meta.client || '',
+              year: p.meta.year || '',
+              role: p.meta.role || '',
+              team: p.meta.team || '',
+            }
+          : {},
+        images: p.images?.length ? p.images.map(img => getStrapiMediaUrl(img)) : (fallback.images || []),
+        detail: p.detail
+          ? {
+              projectTypes: p.detail.projectTypes || [],
+              industryTypes: p.detail.industryTypes || [],
+              taskTags: p.detail.taskTags || [],
+              links: p.detail.links || [],
+              goal: p.detail.goal || '',
+              designSections: p.detail.designSections || [],
+            }
+          : null,
+      }
+    })
   })
 
   return { projects, loading, error }
@@ -91,9 +101,7 @@ export function useProjects() {
 export function useResume() {
   const { data, loading, error } = useSingleType('resume', {
     params: {
-      'populate[skills]': '*',
-      'populate[featuredWorks]': '*',
-      'populate[workExperience]': '*',
+      'populate': '*',
     },
     fallback: staticResume,
   })
@@ -109,6 +117,8 @@ export function useResume() {
       education: d.education || [],
       featuredWorks: d.featuredWorks || [],
       workExperience: d.workExperience || [],
+      avatar: d.avatar ? getStrapiMediaUrl(d.avatar) : null,
+      resumePdf: d.resumePdf ? getStrapiMediaUrl(d.resumePdf) : null,
     }
   })
 
