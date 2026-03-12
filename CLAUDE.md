@@ -78,10 +78,10 @@
    git clone https://github.com/hankMINI/hank-portfolio-cms.git ~/dev/hank-portfolio-cms
    cd ~/dev/hank-portfolio-cms && bash setup.sh
    ```
-4. setup.sh 自動安裝：Xcode tools、Homebrew、Node.js v20、npm 套件
-5. 提醒使用者：
-   - CMS 需手動補 `.env`（含密鑰，不在 git）
-   - CMS 首次需跑 seed：`STRAPI_ADMIN_EMAIL=mini998839@gmail.com STRAPI_ADMIN_PASSWORD=密碼 node scripts/seed.js`
+4. setup.sh 自動安裝：Xcode tools、Homebrew、Node.js v20、npm 套件、從 .env.example 建立 .env
+5. CMS 資料庫（`.tmp/data.db`）和圖片（`public/uploads/`）都已在 git 中，clone 下來就有完整資料
+
+**⚠️ 重要：CMS repo 名稱是 `hank-portfolio-cms`（不是 `hankkuo-portfolio-cms`）**
 
 ### iCloud 注意事項
 - Desktop/Documents 有 iCloud 同步，node_modules 會被「最佳化儲存空間」蒸發
