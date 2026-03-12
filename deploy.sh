@@ -80,10 +80,20 @@ if [ "$ENV" = "prd" ]; then
     exit 0
   fi
 
+  # Export CMS data
+  echo ""
+  info "從 CMS 匯出最新資料..."
+  cd "$PROJECT_DIR"
+  if curl -s http://localhost:1337/api/experiences > /dev/null 2>&1; then
+    node scripts/export-cms.js
+    ok "CMS 資料匯出完成"
+  else
+    warn "CMS 未啟動，使用現有靜態資料"
+  fi
+
   # Build
   echo ""
   info "Building for PRD..."
-  cd "$PROJECT_DIR"
   npm run build:prd
   ok "Build complete → $DIST_DIR"
 
@@ -110,7 +120,7 @@ if [ "$ENV" = "prd" ]; then
     if [ -f "$SSH_KEY" ]; then
       RSYNC_SSH="ssh -i $SSH_KEY -p $REMOTE_PORT"
     fi
-    rsync -avz --delete --chmod=D755,F644 \
+    rsync -avz --delete \
       -e "$RSYNC_SSH" \
       "$DIST_DIR/" \
       "$REMOTE_USER@$REMOTE_HOST:$REMOTE_PATH/"

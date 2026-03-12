@@ -9,7 +9,9 @@
     "build:sit": "vite build --mode sit",
     "build:prd": "vite build --mode production",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "export-cms": "node scripts/export-cms.js",
+    "deploy": "bash deploy.sh prd"
   },
   "dependencies": {
     "swiper": "^12.1.1",
