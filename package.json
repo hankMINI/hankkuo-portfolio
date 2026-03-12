@@ -4,7 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --port 8080",
+    "dev": "vite --port 8080 --mode sit",
+    "dev:sit": "vite --port 8080 --mode sit",
+    "build:sit": "vite build --mode sit",
+    "build:prd": "vite build --mode production",
     "build": "vite build",
     "preview": "vite preview"
   },
